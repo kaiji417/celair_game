@@ -4,7 +4,7 @@ services:
     runtime: node
     # 永続ディスクは有料プラン（Starter以上）が必要。Freeだとスリープ・再起動で状態が消える
     plan: starter
-    buildCommand: npm install && npm run build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
     healthCheckPath: /healthz
     envVars:
