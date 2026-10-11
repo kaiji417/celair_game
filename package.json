@@ -1,0 +1,17 @@
+{
+  "name": "ce-liar-game",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "shared",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "build": "npm run build:shared && npm run build:frontend && npm run build:backend",
+    "build:shared": "cd shared && npx tsc",
+    "build:frontend": "cd frontend && npx vite build",
+    "build:backend": "cd backend && npx tsc",
+    "start": "cd backend && node dist/index.js"
+  }
+}
