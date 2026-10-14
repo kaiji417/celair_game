@@ -2772,3 +2772,45 @@ body {
 .final-ranking-stage { min-height: calc(100vh - 60px); justify-content: center; }
 .final-ranking-stage .champion-ranking .final-ranking-row { padding: 18px 26px; margin: 6px 0; font-size: 1.5rem; }
 .final-ranking-stage .champion-ranking .final-ranking-row.final-top-1 { font-size: 1.7rem; padding: 20px 26px; }
+
+/* 正解発表後の結果（スマホ）: 下寄せのシートをやめ、画面中央のカードにする。
+   iOS Safari はツールバーの出入りで 100vh がずれるので dvh を使い、背面のスクロールも止める */
+.result-sheet-backdrop {
+  align-items: center;
+  padding: 16px;
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none;
+}
+.result-sheet {
+  max-height: calc(100dvh - 32px);
+  border: 1px solid var(--border);
+  border-top-width: 3px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+}
+body.is-sheet-open { overflow: hidden; }
+
+/* ---- スマホの表示ずれ・押しにくさ対策 ---- */
+/* iOS Safari はツールバーの出入りで 100vh が変わり、余計なスクロールが出る */
+body, .container { min-height: 100dvh; }
+/* ダブルタップ拡大と、タップ時の青いハイライトを止める（連打・誤拡大の防止） */
+html { -webkit-text-size-adjust: 100%; }
+button, .option-btn, .team-slot-card { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+/* 「参加する」「回答する」は画面下に固定。チーム数や選択肢が多くてもスクロールせず押せる */
+.player-sticky-action {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 5;
+  box-shadow: 0 -10px 24px 6px rgba(10,10,10,0.85);
+}
+
+/* 参加済みチームは「押せない」ことが分かれば十分。名前は読める濃さに戻し、バッジを大きく */
+.team-slot-taken { opacity: 0.55; }
+.team-slot-taken-badge { font-size: 0.72rem; padding: 3px 7px; color: var(--text); }
+
+/* 締め切り後の案内など、暗すぎて読めなかった待機文の明度を上げる */
+.waiting-text { color: var(--text); opacity: 0.75; letter-spacing: 0.08em; }

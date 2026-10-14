@@ -144,7 +144,7 @@ function PlayerPage() {
             </div>
             {selectedSlot && (
               <button
-                className="btn btn-gold btn-block"
+                className="btn btn-gold btn-block player-sticky-action"
                 style={{ marginTop: '8px' }}
                 onClick={() => handleJoin(selectedSlot)}
               >
@@ -398,7 +398,7 @@ function PlayerPage() {
         )}
 
         <button
-          className="btn btn-gold btn-block mt-20"
+          className="btn btn-gold btn-block mt-20 player-sticky-action"
           onClick={handleSubmit}
           disabled={!selectedOptionId || !connected || isSameAsSubmitted}
         >
@@ -433,6 +433,13 @@ function ResultSheet({
   const hidden = rankingHidden || !!payload?.hidden;
   const movement = reveal && !hidden ? calcRankMovement(reveal.payload.results).get(result.teamId) : undefined;
   const answered = !!result.optionId;
+
+  // 表示中は背面のページをスクロールさせない（iOS で表示位置がずれる原因）
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.body.classList.add('is-sheet-open');
+    return () => document.body.classList.remove('is-sheet-open');
+  }, []);
 
   return (
     <div
