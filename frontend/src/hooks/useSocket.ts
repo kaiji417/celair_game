@@ -28,6 +28,12 @@ function loadSaved(): { name: string | null; token: string | null } {
 
 export type SubmitResult = 'ok' | 'offline' | 'closed' | 'noTeam' | 'rejected';
 
+/** この端末にチームの参加情報が残っているか（再読み込み後の自動復帰の対象か） */
+export function hasSavedTeam(): boolean {
+  const s = loadSaved();
+  return !!(s.name && s.token);
+}
+
 export function clearSavedTeam(): void {
   try {
     localStorage.removeItem(TEAM_NAME_KEY);
@@ -141,6 +147,8 @@ export function usePlayerSocket() {
   } | null>(null);
   const [frozenPoints, setFrozenPoints] = useState<number | null>(null);
   const [sessionReady, setSessionReady] = useState(false);
+  // 保存済みチームへの自動復帰に失敗した理由（登録画面で案内を出す）
+  const [rejoinError, setRejoinError] = useState<'taken' | 'closed' | 'invalid' | null>(null);
   // 自分の回答内容をローカルに保持（サーバーからは選択内容が除去されるため）
   const [myAnswerDetail, setMyAnswerDetail] = useState<{ optionId: string; quizId: string } | null>(() => {
     try {
@@ -184,11 +192,13 @@ export function usePlayerSocket() {
         if (result.ok) {
           setTeam(result.team);
           setTeamId(result.team.id);
+          setRejoinError(null);
         } else {
           // 管理者に端末を外された・チームが削除された等
           clearSavedTeam();
           setTeam(null);
           setTeamId(null);
+          setRejoinError(result.reason);
         }
         setSessionReady(true);
       });
@@ -298,7 +308,7 @@ export function usePlayerSocket() {
 
   const clearResult = useCallback(() => { setLastResult(null); setLastReveal(null); }, []);
 
-  return { socket, connected, sessionReady, gameState, team, joinTeam, leaveTeam, submitAnswer, lastResult, lastReveal, clearResult, frozenPoints, myAnswerDetail };
+  return { socket, connected, sessionReady, rejoinError, gameState, team, joinTeam, leaveTeam, submitAnswer, lastResult, lastReveal, clearResult, frozenPoints, myAnswerDetail };
 }
 
 // ---- 管理者フック ----

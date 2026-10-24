@@ -174,6 +174,10 @@ playerNs.on('connection', (socket) => {
     const teamName = typeof payload?.teamName === 'string' ? payload.teamName : '';
     const token = typeof payload?.token === 'string' ? payload.token : undefined;
     const result = game.joinTeam(teamName, token);
+    // 入り直せない問題の調査用。トークン本体は出さない（有無だけ）
+    console.log(
+      `[join] team="${teamName.slice(0, 30)}" token=${token ? 'yes' : 'no'} -> ${result.ok ? 'ok' : `NG(${result.reason})`}`,
+    );
     if (result.ok) {
       socket.data.teamId = result.team.id;
       broadcastState();

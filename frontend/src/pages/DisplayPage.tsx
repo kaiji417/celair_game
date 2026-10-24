@@ -340,7 +340,7 @@ function FinalRevealBoard({ state }: { state: FinalRevealState }) {
   if (stage.kind === 'intro') {
     return (
       <div className="announce-content final-intro">
-        <img src="/logo-stacked.png" alt="CELIAR GAME" className="announce-logo" />
+        <img src="/logo-horizontal.png" alt="CELIAR GAME" className="announce-logo" />
         <p className="announce-title announce-title-ja">最終結果発表</p>
       </div>
     );
@@ -578,7 +578,7 @@ function DisplayPage() {
   return (
     <div className="display-container">{offlineBadge}
       <h1 className="display-title">
-        <img src="/logo-stacked.png" alt="CELIAR GAME" className="logo-stacked" />
+        <img src="/logo-horizontal.png" alt="CELIAR GAME" className="logo-display" />
       </h1>
 
       {qrCodeUrl && (

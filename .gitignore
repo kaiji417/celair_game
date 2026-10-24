@@ -4,3 +4,4 @@ dist/
 node-v20.11.0-win-x64/
 .env
 game-state.json
+.DS_Store

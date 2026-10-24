@@ -192,6 +192,7 @@ function AdminPage() {
   return (
     <div className="container admin-container" style={{ maxWidth: '1200px' }}>
       {!connected && <div className="offline-banner">サーバーとの接続が切れています — 再接続中</div>}
+      <img src="/logo-horizontal.png" alt="CELIAR GAME" className="logo-header" style={{ marginTop: '8px' }} />
       <h1 className="title">管理者画面</h1>
       {adminError && (
         <div className="card" role="alert" style={{ borderColor: 'var(--red-bright)', display: 'flex', alignItems: 'center', gap: '12px' }}>

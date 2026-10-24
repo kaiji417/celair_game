@@ -87,16 +87,7 @@ body {
 }
 
 /* ===== Logo =====
-   原画は黒インクの透過PNG。暗い地では読めないので反転して
-   淡い墨白（--accent相当）に転写する。擦れの質感はアルファに乗っているので保たれる。 */
-.logo-horizontal,
-.logo-stacked,
-.logo-header,
-.announce-logo {
-  filter: invert(1) sepia(0.12) brightness(1.02);
-}
-
-.logo-header { opacity: 0.72; }
+   CGT ロゴ（金 #D5B345 の透過PNG）。暗地にそのまま載せる（色の加工はしない） */
 .logo-horizontal {
   display: block;
   width: 100%;
@@ -117,7 +108,7 @@ body {
 .logo-header {
   display: block;
   width: auto;
-  max-width: 200px;
+  max-width: 240px;
   height: auto;
   margin: 0 auto 18px;
 }
@@ -1342,7 +1333,8 @@ label {
 
   /* 見出しを詰めて、操作対象のために縦を空ける */
   .title { font-size: 1.7rem; letter-spacing: 0.16em; text-indent: 0.16em; margin-bottom: 24px; }
-  .logo-header { max-width: 150px; margin-bottom: 14px; }
+  /* 新ロゴは横長で下にカナが入るので、細くなりすぎない幅にする */
+  .logo-header { max-width: 230px; margin-bottom: 14px; }
 
   /* 5桁ポイント + 長いチーム名でも溢れない大きさに落とす */
   .points-amount { font-size: 2.1rem; }
@@ -2144,10 +2136,12 @@ label {
   --red: #c8102e;
   --red-bright: #e3233f;
   --red-rgb: 200,16,46;
-  --win: #d4af37;
+  --logo: #d5b345;            /* ロゴの金 */
+  --win: #d4af37;             /* 基本の金: 正解演出・1位・ハイライト */
   --win-rgb: 212,175,55;
-  --win-dim: #8f7724;
+  --win-dim: #8f7724;         /* 暗めの金 */
   --gold: #d4af37;
+  /* .btn-gold: 通常 #e2c25a -> #d4af37 / ホバー #ecd06e -> #dcb944（下の .btn-gold で指定） */
   --font-num: 'Oswald', 'Bebas Neue', 'Noto Sans JP', sans-serif;
 }
 
@@ -2777,14 +2771,16 @@ body {
    iOS Safari はツールバーの出入りで 100vh がずれるので dvh を使い、背面のスクロールも止める */
 .result-sheet-backdrop {
   align-items: center;
-  padding: 16px;
+  /* viewport-fit=cover なので、ノッチ・ホームバーの下に潜らないよう安全領域分を足す */
+  padding: calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right))
+           calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
   height: 100dvh;
   overflow: hidden;
   overscroll-behavior: contain;
   touch-action: none;
 }
 .result-sheet {
-  max-height: calc(100dvh - 32px);
+  max-height: calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   border: 1px solid var(--border);
   border-top-width: 3px;
   box-shadow: 0 12px 40px rgba(0,0,0,0.6);
@@ -2814,3 +2810,21 @@ button, .option-btn, .team-slot-card { touch-action: manipulation; -webkit-tap-h
 
 /* 締め切り後の案内など、暗すぎて読めなかった待機文の明度を上げる */
 .waiting-text { color: var(--text); opacity: 0.75; letter-spacing: 0.08em; }
+
+/* ---- サイト内のロゴは横組みに統一（縦組みはアイコン用） ---- */
+.logo-display {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 520px;
+  margin: 0 auto;
+}
+@media (max-height: 900px) { .display-title .logo-display { max-width: 420px; } }
+@media (max-height: 760px) { .display-title .logo-display { max-width: 340px; } }
+/* 出題中は問題文に縦を譲る */
+.display-title:has(+ .display-main .current-quiz-display) .logo-display,
+.display-title:has(+ .qr-display + .display-main .current-quiz-display) .logo-display { max-width: 340px; }
+
+/* 最終結果発表のタイトル画面: 横ロゴを大きく */
+.announce-logo { max-width: 900px; width: 70vw; }
+@media (max-height: 900px) { .announce-logo { max-width: 720px; } }

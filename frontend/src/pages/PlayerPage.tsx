@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { usePlayerSocket, currentFinalStage, isVoteHidden } from '../hooks/useSocket';
+import { usePlayerSocket, currentFinalStage, isVoteHidden, hasSavedTeam } from '../hooks/useSocket';
 import type { AnswerResult, RevealAnswerResult, SubmitResult } from '../hooks/useSocket';
 import { useWakeLock } from '../lib/useWakeLock';
 import { formatSlotNumber } from '../lib/teamSlot';
@@ -15,7 +15,7 @@ const SUBMIT_ERROR_MESSAGES: Record<Exclude<SubmitResult, 'ok'>, string> = {
 };
 
 function PlayerPage() {
-  const { connected, sessionReady, gameState, team, joinTeam, leaveTeam, submitAnswer, lastResult, lastReveal, clearResult, frozenPoints, myAnswerDetail } = usePlayerSocket();
+  const { connected, sessionReady, rejoinError, gameState, team, joinTeam, leaveTeam, submitAnswer, lastResult, lastReveal, clearResult, frozenPoints, myAnswerDetail } = usePlayerSocket();
   const finalStage = currentFinalStage(gameState);
   const [teamName, setTeamName] = useState('');
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
@@ -31,9 +31,16 @@ function PlayerPage() {
   // チーム参加後はゲーム終了まで画面を点けたままにする（スリープによる切断を防ぐ）
   useWakeLock(!!team && finalStage?.kind !== 'ranking');
 
+  // 復帰待ちが長いときだけ案内を足す。
+  // 以前は5秒で待つのをやめて登録画面に切り替えていたが、回線が遅いと復帰より先に登録画面が出て
+  // 自チームが「参加済み」で押せない状態になっていた（しばらくすると勝手に戻るのはこのため）。
+  // 参加情報が残っている端末は、復帰の結果が出るまで登録画面を出さない。
+  const [slowRestore, setSlowRestore] = useState(false);
   useEffect(() => {
-    const timeout = setTimeout(() => setIsRestoring(false), 5000);
-    return () => clearTimeout(timeout);
+    const slow = setTimeout(() => setSlowRestore(true), 5000);
+    // 参加情報がない端末は登録画面を出すだけなので、長く待たせない
+    const giveUp = hasSavedTeam() ? null : setTimeout(() => setIsRestoring(false), 5000);
+    return () => { clearTimeout(slow); if (giveUp) clearTimeout(giveUp); };
   }, []);
 
   // 保存済みチームへの復帰はフック側（接続のたび）で行う。ここでは完了を待つだけ
@@ -102,7 +109,18 @@ function PlayerPage() {
   };
 
   if (isRestoring) {
-    return <div className="container"><div className="waiting"><p className="waiting-text">接続中...</p></div></div>;
+    return (
+      <div className="container">
+        <div className="waiting">
+          <p className="waiting-text">{hasSavedTeam() ? 'チームに戻っています...' : '接続中...'}</p>
+          {slowRestore && (
+            <p className="waiting-text" style={{ fontSize: '0.85rem', color: 'var(--text-dim)', marginTop: '12px' }}>
+              電波が弱いと時間がかかります。このままお待ちください
+            </p>
+          )}
+        </div>
+      </div>
+    );
   }
 
   // 切断に気づかず「回答したつもり」になるのを防ぐ。全画面共通で最上部に出す
@@ -168,7 +186,13 @@ function PlayerPage() {
             </p>
           </div>
         )}
-        {error && <p style={{ color: 'var(--red-bright)', marginTop: '12px', textAlign: 'center' }}>{error}</p>}
+        {(error || rejoinError) && (
+          <p style={{ color: 'var(--red-bright)', marginTop: '12px', textAlign: 'center' }}>
+            {error || (rejoinError === 'taken'
+              ? '前に使っていたチームに戻れませんでした。運営に声をかけてください（端末の切り替えをします）'
+              : 'チームの登録が外れました。もう一度チームを選んでください')}
+          </p>
+        )}
       </div>
     );
   }
