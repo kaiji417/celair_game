@@ -58,16 +58,8 @@ def prepare_assets() -> dict:
     ASSETS.mkdir(parents=True, exist_ok=True)
     out = {}
 
-    # ロゴは黒インクの透過PNG。黒地で読めるよう白へ反転したものを作る
-    for key, src in (("logo_stacked", LOGO_STACKED), ("logo_wide", LOGO_WIDE)):
-        im = Image.open(src).convert("RGBA")
-        r, g, b, a = im.split()
-        white = Image.merge("RGBA", (
-            Image.new("L", im.size, 0xF2), Image.new("L", im.size, 0xEF), Image.new("L", im.size, 0xE8), a,
-        ))
-        dst = ASSETS / f"{key}-white.png"
-        white.save(dst)
-        out[key] = dst
+    # ロゴは金（#D5B345）の透過PNG。黒地にそのまま載せる。サイトと同じく横組みを使う
+    out["logo_wide"] = LOGO_WIDE
 
     # 結果通知は画面下半分のシートだけ切り出す（上は暗い背景だけなので）
     res = ASSETS / "phone-6-result.png"
@@ -219,10 +211,10 @@ def num_badge(slide, x, y, n, size=64):
 # ---------------------------------------------------------------------------
 def cover(prs, assets, label, tagline):
     s = base(prs)
-    lw = 460
-    s.shapes.add_picture(str(assets["logo_stacked"]), px(960 - lw / 2), px(150), px(lw))
-    red_band(s, 960, 700, label, size=44, h=92, pad_x=60)
-    text(s, 0, 840, 1920, 60, tagline, size=34, color=DIM, align=PP_ALIGN.CENTER, spacing=3)
+    lw = 1300
+    s.shapes.add_picture(str(assets["logo_wide"]), px(960 - lw / 2), px(260), px(lw))
+    red_band(s, 960, 640, label, size=44, h=92, pad_x=60)
+    text(s, 0, 790, 1920, 60, tagline, size=34, color=DIM, align=PP_ALIGN.CENTER, spacing=3)
     return s
 
 
@@ -252,11 +244,15 @@ def build_deck(assets) -> Presentation:
         [("テーブルの ", {}), ("QRコード", G), (" を読み取る", {})],
         [("自分のチーム名", G), ("を選んで\n「参加する」", {})],
     ]
-    y = 330
+    y = 300
     for i, ln in enumerate(lines):
         num_badge(s, 80, y, i + 1, size=76)
         text(s, 190, y - 4, 1000, 170, ln, size=46, line_spacing=1.3)
-        y += 220
+        y += 190
+    # QR を読んだカメラの画面のまま使うと、閉じたときにチームの情報が消えて入り直せなくなる
+    text(s, 190, y - 30, 1000, 60,
+         [("QRを読んだら ", {}), ("Safari / Chrome で開く", G), ("（カメラの画面のまま使わない）", {})],
+         size=30, color=DIM)
     card(s, 80, 800, 1100, 150)
     rect(s, 80, 800, 8, 150, fill=RED)
     text(s, 120, 800, 1040, 150, [("スマホを使うのは、", {}), ("チームのリーダー1人だけ", G), ("。\nほかのメンバーはリーダーの画面を一緒に見てください。", {})],
@@ -356,7 +352,7 @@ def build_deck(assets) -> Presentation:
 
     # 7. 開始
     s = base(prs, 7, total)
-    s.shapes.add_picture(str(assets["logo_wide"]), px(960 - 450), px(250), px(900))
+    s.shapes.add_picture(str(assets["logo_wide"]), px(960 - 400), px(190), px(800))
     text(s, 0, 450, 1920, 140, "ゲーム開始", size=120, font=FONT_JA_BOLD, align=PP_ALIGN.CENTER, spacing=12)
     rect(s, 920, 640, 80, 7, fill=RED)
     text(s, 0, 700, 1920, 120, "困ったときは、運営スタッフに声をかけてください",

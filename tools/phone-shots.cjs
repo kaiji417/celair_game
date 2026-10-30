@@ -48,7 +48,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
   const names = ['あおい', 'いちご', 'うさぎ', 'えだまめ', 'おにぎり', 'かもめ', 'きつね', 'くじら'];
   admin.emit('setTeamSlots', names);
   admin.emit('updateQuizzes', [{
-    id: 'q1', question: '新郎新婦が初めてデートした場所は？', prizePool: 3000, status: 'waiting',
+    id: 'q1', question: '新郎新婦が初めてデートした場所は？', correctOptionId: 'a', prizePool: 3000, status: 'waiting',
     options: [{ id: 'a', text: '東京タワー' }, { id: 'b', text: 'スカイツリー' }, { id: 'c', text: '通天閣' }, { id: 'd', text: '五稜郭タワー' }],
   }]);
   await wait(300);

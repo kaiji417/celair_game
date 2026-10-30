@@ -9,6 +9,8 @@ import { buildFinalStages } from './finalReveal';
 
 const STARTING_POINTS = 0;
 const MAX_TEAM_NAME_LENGTH = 30;
+export const MIN_OPTIONS = 2;
+export const MAX_OPTIONS = 6;
 // サーバー運用時は永続ディスクのパスを STATE_FILE で指定する
 const SAVE_FILE = process.env.STATE_FILE || path.join(__dirname, '../../game-state.json');
 
@@ -115,6 +117,15 @@ export class GameManager {
     const lockedMissing = this.quizzes.find((q) => q.status !== 'waiting' && !incomingIds.has(q.id));
     if (lockedMissing) {
       return { ok: false, message: '出題済みのクイズは削除できません' };
+    }
+    // 選択肢は2〜6個（ディスプレイは最大3列×2段で組む）
+    const badOptions = quizzes.find((q) => {
+      const existing = this.quizzes.find((e) => e.id === q.id);
+      if (existing && existing.status !== 'waiting') return false;
+      return !Array.isArray(q.options) || q.options.length < MIN_OPTIONS || q.options.length > MAX_OPTIONS;
+    });
+    if (badOptions) {
+      return { ok: false, message: `選択肢は${MIN_OPTIONS}〜${MAX_OPTIONS}個にしてください` };
     }
 
     const currentId = this.quizzes[this.currentQuizIndex]?.id;

@@ -125,6 +125,9 @@ export interface ServerToClientEvents {
   error: (message: string) => void;
   showQrCode: (url: string) => void;
   hideQrCode: () => void;
+  // ディスプレイ全体にロゴだけを映す（開始前・終了後）
+  showLogo: () => void;
+  hideLogo: () => void;
   sessionId: (id: string) => void;
   showResults: () => void;
   hideResults: () => void;
@@ -151,6 +154,8 @@ export interface AdminToServerEvents {
   removeTeam: (teamId: string) => void;
   showQrCode: (url: string) => void;
   hideQrCode: () => void;
+  showLogo: () => void;
+  hideLogo: () => void;
   // 最終結果発表を開始 / 次の段へ進める
   finalRevealNext: () => void;
   adjustPoints: (teamId: string, delta: number) => void;

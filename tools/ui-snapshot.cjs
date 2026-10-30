@@ -17,6 +17,8 @@ const stage = process.argv[2] || 'closed';
     { id: 'a', text: '東京タワー' }, { id: 'b', text: 'スカイツリー' },
     { id: 'c', text: '通天閣' }, { id: 'd', text: '五稜郭タワー' },
   ];
+  // OPTIONS=6 で6択にする（5択以上のレイアウト確認用）
+  if (process.env.OPTIONS === '6') opts.push({ id: 'e', text: '名古屋テレビ塔' }, { id: 'f', text: 'さっぽろテレビ塔' });
   admin.emit('updateQuizzes', [
     { id: 'q1', question: '新郎新婦が初めてデートした場所は？', options: opts, correctOptionId: 'a', prizePool: 3000, status: 'waiting' },
     { id: 'q2', question: 'FINAL: 新婦の初恋の相手は？', options: opts.slice(0, 2), correctOptionId: 'a', prizePool: 10000, status: 'waiting', isLastQuiz: true },
@@ -45,7 +47,18 @@ const stage = process.argv[2] || 'closed';
   if (stage === 'payout' || stage === 'monopoly') { admin.emit('showResults'); return done(); }
   if (stage.startsWith('final-')) {
     // 順位をばらけさせる（単独優勝・2位・3位がいる形）
-    const bonus = { 'かもめ': 2500, 'きつね': 1800, 'こまち': 900, 'くじら': 600, 'あおい': 300 };
+    // 第2引数で同率のパターンを選べる: tie1-2 / tie1-3 / tie3-2 / tie3-4
+    const patterns = {
+      default: { 'かもめ': 2500, 'きつね': 1800, 'こまち': 900, 'くじら': 600, 'あおい': 300 },
+      'tie1-2': { 'かもめ': 2500, 'きつね': 2500, 'こまち': 900, 'くじら': 600, 'あおい': 300 },
+      'tie1-3': { 'かもめ': 2500, 'きつね': 2500, 'こまち': 2500, 'くじら': 600, 'あおい': 300 },
+      // 1問目の配当で かもめ・きつね・こまち は +1000 されている前提で揃える
+      'tie3-2': { 'かもめ': 2500, 'きつね': 1800, 'こまち': 900, 'くじら': 1900, 'あおい': 300 },
+      'tie3-4': { 'かもめ': 2500, 'きつね': 1800, 'こまち': 900, 'くじら': 900, 'あおい': 900, 'けやき': 900 },
+      'tie3-5': { 'かもめ': 2500, 'きつね': 1800, 'こまち': 900, 'くじら': 1900, 'あおい': 1900, 'けやき': 1900, 'いちご': 1900 },
+      'tie2-3': { 'かもめ': 2500, 'きつね': 1800, 'こまち': 1800, 'くじら': 2800, 'あおい': 300 },
+    };
+    const bonus = patterns[process.argv[3] || 'default'];
     // チームIDを取るために現在の状態を受け取る（参加者を追加すると管理画面に gameState が届く）
     const st = await new Promise((res) => { admin.once('gameState', res); admin.emit('setTeamSlots', names); });
     for (const t of st.teams) if (bonus[t.name]) admin.emit('adjustPoints', t.id, bonus[t.name]);

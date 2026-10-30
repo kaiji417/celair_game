@@ -396,7 +396,7 @@ function PlayerPage() {
         </div>
 
         {/* 回答後も締め切りまでは選び直せる */}
-        <div>
+        <div className={`${currentQuiz.options.length >= 5 ? 'player-options-many' : ''} ${Math.max(...currentQuiz.options.map((o) => [...o.text].length)) > 16 ? 'player-options-long' : ''}`}>
           {currentQuiz.options.map((option, i) => {
             const isSubmitted = hasAnswered && myAnswerDetail?.quizId === currentQuiz.id && myAnswerDetail.optionId === option.id;
             const isPicked = selectedOptionId === option.id;

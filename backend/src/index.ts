@@ -326,6 +326,9 @@ adminNs.on('connection', (socket) => {
     playerNs.emit('hideQrCode');
   });
 
+  socket.on('showLogo', () => { playerNs.emit('showLogo'); });
+  socket.on('hideLogo', () => { playerNs.emit('hideLogo'); });
+
   socket.on('setTeamSlots', (slots) => {
     if (!Array.isArray(slots)) return;
     game.setTeamSlots(slots.filter((s): s is string => typeof s === 'string').map((s) => s.trim().slice(0, 30)));

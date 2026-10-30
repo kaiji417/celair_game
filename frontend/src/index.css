@@ -2828,3 +2828,164 @@ button, .option-btn, .team-slot-card { touch-action: manipulation; -webkit-tap-h
 /* 最終結果発表のタイトル画面: 横ロゴを大きく */
 .announce-logo { max-width: 900px; width: 70vw; }
 @media (max-height: 900px) { .announce-logo { max-width: 720px; } }
+
+/* =====================================================================
+   セライアーゲームの意匠（ロゴの唐草）を最終発表とロゴ画面に通す
+   ===================================================================== */
+/* 唐草で左右を挟んだ見出し */
+.ornate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(16px, 2vw, 36px);
+  margin: 0;
+}
+.ornate-side { height: 1.15em; width: auto; flex-shrink: 0; }
+.ornate-text { white-space: nowrap; }
+
+/* 段の見出し（第3位・第2位・4位以下・最終順位）: 朱の帯をやめ、金の明朝風に */
+.final-ornate-label {
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--win);
+  letter-spacing: 0.3em;
+  margin-bottom: 28px;
+}
+.final-ornate-label .ornate-text { text-indent: 0.3em; }
+
+/* 最終結果発表のタイトル: ロゴの下に唐草付きで、少し遅れて出す */
+.final-intro-title {
+  font-size: 3.6rem;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 0.4em;
+  opacity: 0;
+  animation: fadeUp 0.9s 0.6s ease-out forwards;
+}
+.final-intro-title .ornate-text { text-indent: 0.4em; }
+.final-intro-title .ornate-side { height: 0.9em; }
+
+/* 最終発表の各画面の上に置く小さい横ロゴ */
+.final-mini-logo {
+  display: block;
+  width: 300px;
+  max-width: 30vw;
+  height: auto;
+  margin: 0 auto 28px;
+  opacity: 0.9;
+}
+
+/* 優勝: 朱の帯 → 唐草で挟んだ金の名前 → 得点 */
+.champion-solo { justify-content: center; padding-top: 0; }
+.champion-solo .champion-reveal { gap: 22px; }
+.champion-solo .champion-names { gap: 18px; }
+.champion-solo .champion-name.ornate {
+  font-size: 6.4rem;
+  color: var(--win);
+  text-shadow: 0 0 40px rgba(var(--win-rgb), 0.35);
+}
+.champion-solo .champion-name.ornate .ornate-side { height: 0.75em; }
+/* 同率優勝は縦に積み、人数に応じて縮める（横並びだと唐草の分だけ幅が足りない） */
+.champion-solo .champion-names.is-tie { flex-direction: column; flex-wrap: nowrap; gap: 10px; }
+.champion-solo.tie-2 .champion-name.ornate { font-size: 4.6rem; }
+.champion-solo.tie-3 .champion-name.ornate { font-size: 3.6rem; }
+.champion-solo.tie-4 .champion-name.ornate { font-size: 2.8rem; }
+.champion-solo.tie-4 .champion-names.is-tie { display: grid; grid-template-columns: repeat(2, auto); justify-content: center; gap: 8px 56px; }
+
+/* 3位・2位: 同率の人数でカードを縮める。4チーム以上は2段 */
+.podium-teams { width: min(1600px, 94vw); }
+.podium-count-2 .podium-team, .podium-count-3 .podium-team { min-width: 0; flex: 1 1 0; max-width: 560px; }
+.podium-count-3 .podium-name { font-size: clamp(2rem, 3.4vw, 3.4rem); }
+.podium-count-4 .podium-team, .podium-count-5 .podium-team { min-width: 0; flex: 0 1 calc(50% - 24px); max-width: 640px; padding: 16px 28px; }
+.podium-count-4 .podium-name, .podium-count-5 .podium-name { font-size: clamp(1.8rem, 3vw, 2.8rem); }
+.podium-count-4 .podium-points, .podium-count-5 .podium-points { font-size: 1.8rem; }
+
+/* ロゴだけの画面（開始前・終了後）: 黒地に横ロゴ、上下に朱の細線 */
+.logo-screen-wrap { padding: 0; }
+.logo-screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(ellipse at center, rgba(var(--win-rgb), 0.06), transparent 60%);
+}
+.logo-screen::before, .logo-screen::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 4px;
+  background: var(--red);
+}
+.logo-screen::before { top: 0; }
+.logo-screen::after { bottom: 0; }
+.logo-screen-img {
+  width: min(1500px, 80vw);
+  height: auto;
+  animation: fadeUp 1.2s ease-out both;
+}
+
+/* =====================================================================
+   5〜6択: ディスプレイは3列×2段、スマホは1つずつ少し詰める
+   ===================================================================== */
+.options-display.options-many {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.options-display.options-many .option-display { justify-content: flex-start; }
+/* ランキング併記の2カラム時は幅が足りないので2列×3段 */
+.display-main-split .options-display.options-many { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.disclosure-columns.cols-5,
+.disclosure-columns.cols-6 { grid-template-columns: repeat(3, 1fr); row-gap: 40px; }
+.disclosure-columns.cols-5 .disclosure-col-text,
+.disclosure-columns.cols-6 .disclosure-col-text { font-size: 1.35rem; }
+.disclosure-columns.cols-5 .disclosure-team,
+.disclosure-columns.cols-6 .disclosure-team { font-size: 1.15rem; padding: 5px 0; }
+
+.player-options-many .option-btn { padding: 11px 16px; margin: 6px 0; min-height: 46px; font-size: 1rem; }
+
+/* 3位・2位の同率5チーム以上: 3列に流してはみ出しを防ぐ */
+.podium-count-5 .podium-team { flex: 0 1 calc(33.3% - 24px); padding: 14px 22px; }
+.podium-count-5 .podium-name { font-size: clamp(1.6rem, 2.4vw, 2.4rem); }
+.podium-count-5 .podium-points { font-size: 1.5rem; }
+
+/* =====================================================================
+   選択肢の均等グリッド: 幅を揃えて 3+1 のような段違いを防ぐ
+   列数は DisplayPage 側で --opt-cols に設定（4択は短文なら4列、長文なら2×2）
+   ===================================================================== */
+.options-display.options-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--opt-cols, 2), minmax(0, 1fr));
+  gap: 16px;
+  max-width: 1500px;
+  margin: 0 auto;
+}
+.options-display.options-grid .option-display {
+  justify-content: flex-start;
+  text-align: left;
+  min-width: 0;
+}
+.display-main:not(.display-main-split) .options-display.options-grid .option-display { padding-left: 26px; padding-right: 26px; }
+.options-display.options-grid .option-key { flex-shrink: 0; }
+.options-display.options-grid .option-text {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.35;
+  word-break: break-word;
+}
+/* 長い選択肢は文字を一段小さく */
+.display-main:not(.display-main-split) .options-grid.options-long .option-display { font-size: 1.55rem; }
+.options-grid.options-long .option-display { font-size: 1.15rem; }
+
+/* ランキング併記の2カラム時は従来どおり1列縦積み（5択以上は2列） */
+.display-main-split .options-display.options-grid { grid-template-columns: 1fr; gap: 10px; }
+.display-main-split .options-display.options-grid.options-many { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+@media (max-height: 760px) {
+  .display-main:not(.display-main-split) .options-grid.options-long .option-display { font-size: 1.15rem; }
+}
+
+/* スマホ: 長い選択肢は少し小さくして2行に収める */
+.player-options-long .option-btn { font-size: 0.95rem; line-height: 1.35; }

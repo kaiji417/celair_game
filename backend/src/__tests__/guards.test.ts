@@ -180,3 +180,22 @@ describe('ポイント調整', () => {
     expect(m.adjustPoints(a.team.id, 1.5)).toBe(false);
   });
 });
+
+describe('選択肢の数', () => {
+  const withOptions = (n: number): Quiz => ({
+    ...makeQuiz('qx'),
+    options: Array.from({ length: n }, (_, i) => ({ id: `qx-${i}`, text: `O${i}` })),
+    correctOptionId: 'qx-0',
+  });
+
+  it('2〜6択は登録できる', () => {
+    const m = new GameManager();
+    for (const n of [2, 4, 6]) expect(m.setQuizzes([withOptions(n)]).ok).toBe(true);
+  });
+
+  it('1択・7択は弾く', () => {
+    const m = new GameManager();
+    expect(m.setQuizzes([withOptions(1)]).ok).toBe(false);
+    expect(m.setQuizzes([withOptions(7)]).ok).toBe(false);
+  });
+});

@@ -7,12 +7,13 @@ function AdminPage() {
   const {
     gameState, authenticated, authError, connect, connected, adminError, clearAdminError,
     updateQuizzes, startQuiz, closeAnswers, revealAnswer,
-    resetGame, fullReset, removeTeam, releaseDevice, showQrCode, hideQrCode, finalRevealNext,
+    resetGame, fullReset, removeTeam, releaseDevice, showQrCode, hideQrCode, showLogo, hideLogo, finalRevealNext,
     adjustPoints, resetAnswer, setTeamSlots, showResults,
   } = useAdminSocket();
   const [editingQuiz, setEditingQuiz] = useState<Quiz | null>(null);
   const [qrUrl, setQrUrl] = useState('');
   const [qrShowing, setQrShowing] = useState(false);
+  const [logoShowing, setLogoShowing] = useState(false);
   const [password, setPassword] = useState('');
   const [adjustTeamId, setAdjustTeamId] = useState('');
   const [adjustDelta, setAdjustDelta] = useState(0);
@@ -233,6 +234,25 @@ function AdminPage() {
         </div>
         <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginTop: '10px' }}>
           ※参加者がスマホでアクセスするURLを入力してください
+        </p>
+      </div>
+
+      {/* ロゴだけを映す（開始前・終了後） */}
+      <div className="card">
+        <h3>ロゴ表示</h3>
+        <div className="flex-row mt-20">
+          {!logoShowing ? (
+            <button className="btn btn-gold" style={{ padding: '10px 20px' }} onClick={() => { showLogo(); setLogoShowing(true); }}>
+              ロゴを映す
+            </button>
+          ) : (
+            <button className="btn btn-primary" style={{ padding: '10px 20px' }} onClick={() => { hideLogo(); setLogoShowing(false); }}>
+              戻す
+            </button>
+          )}
+        </div>
+        <p style={{ color: 'var(--text-dim)', fontSize: '0.9rem', marginTop: '10px' }}>
+          ※映している間は、出題や結果発表よりもロゴが優先されます
         </p>
       </div>
 
@@ -680,7 +700,7 @@ function AdminPage() {
                 </button>
               </div>
             ))}
-            {editingQuiz.options.length < 4 && (
+            {editingQuiz.options.length < 6 && (
               <button className="btn btn-secondary" onClick={handleAddOption} style={{ marginTop: '5px' }}>
                 選択肢追加
               </button>

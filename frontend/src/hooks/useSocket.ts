@@ -390,6 +390,8 @@ export function useAdminSocket() {
   const removeTeam = useCallback((teamId: string) => { socket?.emit('removeTeam', teamId); }, [socket]);
   const showQrCode = useCallback((url: string) => { socket?.emit('showQrCode', url); }, [socket]);
   const hideQrCode = useCallback(() => { socket?.emit('hideQrCode'); }, [socket]);
+  const showLogo = useCallback(() => { socket?.emit('showLogo'); }, [socket]);
+  const hideLogo = useCallback(() => { socket?.emit('hideLogo'); }, [socket]);
   const finalRevealNext = useCallback(() => { socket?.emit('finalRevealNext'); }, [socket]);
   const adjustPoints = useCallback((teamId: string, delta: number) => { socket?.emit('adjustPoints', teamId, delta); }, [socket]);
   const resetAnswer = useCallback((teamId: string) => { socket?.emit('resetAnswer', teamId); }, [socket]);
@@ -402,7 +404,7 @@ export function useAdminSocket() {
   return {
     gameState, authenticated, authError, connect, connected, adminError, clearAdminError,
     updateQuizzes, startQuiz, closeAnswers, revealAnswer,
-    resetGame, fullReset, removeTeam, releaseDevice, showQrCode, hideQrCode, finalRevealNext,
+    resetGame, fullReset, removeTeam, releaseDevice, showQrCode, hideQrCode, showLogo, hideLogo, finalRevealNext,
     adjustPoints, resetAnswer, setTeamSlots, showResults,
   };
 }

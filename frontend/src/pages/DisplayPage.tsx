@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { io } from 'socket.io-client';
 import { QRCodeSVG } from 'qrcode.react';
 import type { GameState, AnswerResult, Team, Quiz, RevealAnswerResult } from '../hooks/useSocket';
@@ -328,6 +328,26 @@ function FinalRow({ t, enter }: { t: FinalTeam; enter?: boolean }) {
   );
 }
 
+/** ロゴの唐草で左右を挟んだ見出し（最終発表の各段で使う） */
+function OrnateLabel({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div className={`ornate ${className}`}>
+      <img src="/ornament-left.png" alt="" aria-hidden="true" className="ornate-side" />
+      <span className="ornate-text">{children}</span>
+      <img src="/ornament-right.png" alt="" aria-hidden="true" className="ornate-side" />
+    </div>
+  );
+}
+
+/** ロゴだけを大きく映す画面（ゲーム開始前・終了後） */
+function LogoScreen() {
+  return (
+    <div className="logo-screen">
+      <img src="/logo-horizontal.png" alt="CELIAR GAME" className="logo-screen-img" />
+    </div>
+  );
+}
+
 /**
  * 最終結果発表。司会が1段ずつ進める。
  *   intro → 4位以下(まとめて) → 3位 → 2位 → 優勝＋全順位
@@ -341,7 +361,7 @@ function FinalRevealBoard({ state }: { state: FinalRevealState }) {
     return (
       <div className="announce-content final-intro">
         <img src="/logo-horizontal.png" alt="CELIAR GAME" className="announce-logo" />
-        <p className="announce-title announce-title-ja">最終結果発表</p>
+        <OrnateLabel className="final-intro-title">最終結果発表</OrnateLabel>
       </div>
     );
   }
@@ -351,11 +371,14 @@ function FinalRevealBoard({ state }: { state: FinalRevealState }) {
     const champions = stage.teams;
     const isTie = champions.length > 1;
     return (
-      <div className="champion-screen champion-solo">
+      <div className={`champion-screen champion-solo tie-${Math.min(champions.length, 4)}`}>
+        <img src="/logo-horizontal.png" alt="" aria-hidden="true" className="final-mini-logo" />
         <div className="champion-reveal">
           <p className="champion-label">{isTie ? '同率優勝' : '優勝'}</p>
           <div className={`champion-names ${isTie ? 'is-tie' : ''}`}>
-            {champions.map((c) => <p key={c.id} className="champion-name">{c.name}</p>)}
+            {champions.map((c) => (
+              <OrnateLabel key={c.id} className="champion-name">{c.name}</OrnateLabel>
+            ))}
           </div>
           <p className="champion-points">{champions[0]?.points.toLocaleString()} pt</p>
         </div>
@@ -368,7 +391,8 @@ function FinalRevealBoard({ state }: { state: FinalRevealState }) {
     const ranked = stage.teams;
     return (
       <div className="final-stage final-ranking-stage">
-        <p className="final-stage-label">最終順位</p>
+        <img src="/logo-horizontal.png" alt="" aria-hidden="true" className="final-mini-logo" />
+        <OrnateLabel className="final-ornate-label">最終順位</OrnateLabel>
         <div
           className="final-ranking-list champion-ranking ranking-solo"
           style={{ ['--rows' as string]: Math.ceil(ranked.length / 2) }}
@@ -392,9 +416,9 @@ function FinalRevealBoard({ state }: { state: FinalRevealState }) {
   const lowerDensity = stage.teams.length > 12 ? 'final-ultra' : stage.teams.length > 7 ? 'final-compact' : '';
   return (
     <div className="final-stage">
-      <p className="final-stage-label">{isPodium ? `第${stage.rank}位` : '4位以下'}</p>
+      <OrnateLabel className="final-ornate-label">{isPodium ? `第${stage.rank}位` : '4位以下'}</OrnateLabel>
       {isPodium ? (
-        <div className="podium-teams">
+        <div className={`podium-teams podium-count-${Math.min(stage.teams.length, 5)}`}>
           {stage.teams.map((t) => (
             <div key={t.id} className="podium-team final-row-enter">
               <span className="podium-name">{t.name}</span>
@@ -422,6 +446,8 @@ function DisplayPage() {
   const [lastResults, setLastResults] = useState<AnswerResult[]>([]);
   const [revealPayload, setRevealPayload] = useState<RevealAnswerResult | null>(null);
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  // /display?logo でも確認できるようにしておく
+  const [logoVisible, setLogoVisible] = useState(() => new URLSearchParams(window.location.search).has('logo'));
   // 消去済みの選択肢と、消去完了フラグ（正解確定）
   const [eliminatedIds, setEliminatedIds] = useState<string[]>([]);
   const [settled, setSettled] = useState(false);
@@ -494,6 +520,8 @@ function DisplayPage() {
 
     socket.on('showQrCode', (url: string) => setQrCodeUrl(url));
     socket.on('hideQrCode', () => setQrCodeUrl(null));
+    socket.on('showLogo', () => setLogoVisible(true));
+    socket.on('hideLogo', () => setLogoVisible(false));
 
     return () => { socket.close(); };
   }, []);
@@ -513,6 +541,11 @@ function DisplayPage() {
 
   // 最終結果発表は他のどの画面よりも優先する。
   // 直前の問題の開示・配分画面が残っていると、その下に隠れて表示されなかったため
+  // ロゴ画面は管理画面から明示的に出すものなので、他のどの画面よりも優先する
+  if (logoVisible) {
+    return <div className="display-container logo-screen-wrap">{offlineBadge}<LogoScreen /></div>;
+  }
+
   if (gameState?.finalReveal) {
     return (
       <div className="display-container final-stage-screen">{offlineBadge}
@@ -609,17 +642,28 @@ function DisplayPage() {
 
             <p className="quiz-question-display">{currentQuiz.question}</p>
 
-            <div className="options-display">
-              {currentQuiz.options.map((opt, i) => {
-                const isCorrect = currentQuiz.status === 'revealed' && currentQuiz.correctOptionId === opt.id;
-                return (
-                  <div key={opt.id} className={`option-display ${isCorrect ? 'correct' : ''}`}>
-                    <span className="option-key">{String.fromCharCode(65 + i)}</span>
-                    <span>{opt.text}</span>
-                  </div>
-                );
-              })}
-            </div>
+            {(() => {
+              // 選択肢の幅を揃えるため、数と最長文字数から列数を決める（3+1 のような段違いを防ぐ）
+              const n = currentQuiz.options.length;
+              const maxLen = Math.max(...currentQuiz.options.map((o) => [...o.text].length));
+              const cols = n <= 3 ? n : n === 4 ? (maxLen <= 8 ? 4 : 2) : 3;
+              return (
+                <div
+                  className={`options-display options-grid ${n >= 5 ? 'options-many' : ''} ${maxLen > 14 ? 'options-long' : ''}`}
+                  style={{ '--opt-cols': cols } as CSSProperties}
+                >
+                  {currentQuiz.options.map((opt, i) => {
+                    const isCorrect = currentQuiz.status === 'revealed' && currentQuiz.correctOptionId === opt.id;
+                    return (
+                      <div key={opt.id} className={`option-display ${isCorrect ? 'correct' : ''}`}>
+                        <span className="option-key">{String.fromCharCode(65 + i)}</span>
+                        <span className="option-text">{opt.text}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
 
             {/* 回答受付中は「何チームが回答済みか」だけ見せる（選択内容は伏せる） */}
             {currentQuiz.status === 'answering' && gameState && (() => {
