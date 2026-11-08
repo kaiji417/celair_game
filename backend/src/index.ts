@@ -56,12 +56,15 @@ function sanitizeStateForPlayer(state: GameState): GameState {
     finalReveal: sanitizeFinalReveal(state.finalReveal),
     // ランキング非表示中・最終発表中（優勝発表まで）は得点を伏せる。
     // 自チームの得点が分かると、そこから正解チーム数や順位が推測できてしまうため
-    teams: (state.finalReveal
-      ? state.finalReveal.step < state.finalReveal.stages.length - 1
-      : state.rankingHidden)
+    teams: state.teams.map((t) => ({
+      ...t,
       // 最終段（全順位）までは得点を伏せる
-      ? state.teams.map((t) => ({ ...t, points: 0 }))
-      : state.teams,
+      points: (state.finalReveal
+        ? state.finalReveal.step < state.finalReveal.stages.length - 1
+        : state.rankingHidden) ? 0 : t.points,
+      // ロビー中は、端末がつながっていないチームを選び直せるように見せる（joinTeam と同じ判定）
+      hasDevice: state.phase === 'lobby' ? !!t.hasDevice && isTeamOnline(t.id) : t.hasDevice,
+    })),
 
     // revealed前のクイズから正解情報を除去
     quizzes: state.quizzes.map((q) => {
@@ -159,6 +162,14 @@ function notifyDeviceReleased(teamId: string): void {
   }
 }
 
+/** そのチームの端末が今つながっているか */
+function isTeamOnline(teamId: string): boolean {
+  for (const s of playerNs.sockets.values()) {
+    if (s.data.teamId === teamId) return true;
+  }
+  return false;
+}
+
 function broadcastState(): void {
   const state = game.getState();
   adminNs.emit('gameState', state);
@@ -173,7 +184,7 @@ playerNs.on('connection', (socket) => {
     if (typeof callback !== 'function') return;
     const teamName = typeof payload?.teamName === 'string' ? payload.teamName : '';
     const token = typeof payload?.token === 'string' ? payload.token : undefined;
-    const result = game.joinTeam(teamName, token);
+    const result = game.joinTeam(teamName, token, isTeamOnline);
     // 入り直せない問題の調査用。トークン本体は出さない（有無だけ）
     console.log(
       `[join] team="${teamName.slice(0, 30)}" token=${token ? 'yes' : 'no'} -> ${result.ok ? 'ok' : `NG(${result.reason})`}`,
@@ -196,6 +207,11 @@ playerNs.on('connection', (socket) => {
     const success = game.submitAnswer({ teamId, quizId: answer.quizId, optionId: answer.optionId });
     if (success) broadcastState();
     callback(success);
+  });
+
+  // ロビー中は切断したチームを選択可能に見せるため、状態を配り直す
+  socket.on('disconnect', () => {
+    if (socket.data.teamId && game.getState().phase === 'lobby') broadcastState();
   });
 
   socket.on('leaveTeam', (token) => {

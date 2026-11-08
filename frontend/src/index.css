@@ -2989,3 +2989,36 @@ button, .option-btn, .team-slot-card { touch-action: manipulation; -webkit-tap-h
 
 /* スマホ: 長い選択肢は少し小さくして2行に収める */
 .player-options-long .option-btn { font-size: 0.95rem; line-height: 1.35; }
+
+/* =====================================================================
+   長い問題文・選択肢: 文字数に応じて段階的に縮め、問題文と選択肢の比率を保つ
+   （DisplayPage の questionLengthClass / options-xlong で付与）
+   ===================================================================== */
+.quiz-question-display.q-long,
+.quiz-question-display.q-xlong,
+.disclosure-question.q-long,
+.disclosure-question.q-xlong {
+  max-width: 1300px;
+  margin-left: auto;
+  margin-right: auto;
+  text-wrap: balance;
+  line-height: 1.45;
+}
+.quiz-question-display.q-xlong,
+.disclosure-question.q-xlong { text-align: left; }
+
+.display-main:not(.display-main-split) .quiz-question-display.q-long { font-size: 2.7rem; margin-bottom: 30px; }
+.display-main:not(.display-main-split) .quiz-question-display.q-xlong { font-size: 2.1rem; margin-bottom: 26px; }
+.display-main-split .quiz-question-display.q-long { font-size: 1.7rem; }
+.display-main-split .quiz-question-display.q-xlong { font-size: 1.4rem; }
+.disclosure-question.q-long { font-size: 1.6rem; }
+.disclosure-question.q-xlong { font-size: 1.3rem; }
+
+.display-main:not(.display-main-split) .options-grid.options-xlong .option-display { font-size: 1.3rem; padding-top: 18px; padding-bottom: 18px; }
+.options-grid.options-xlong .option-display { font-size: 1.05rem; line-height: 1.4; }
+
+@media (max-height: 900px) {
+  .display-main:not(.display-main-split) .quiz-question-display.q-long { font-size: 2.1rem; }
+  .display-main:not(.display-main-split) .quiz-question-display.q-xlong { font-size: 1.7rem; }
+  .display-main:not(.display-main-split) .options-grid.options-xlong .option-display { font-size: 1.15rem; }
+}

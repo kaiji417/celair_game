@@ -53,6 +53,19 @@ describe('1チーム1端末 / 再接続', () => {
     expect(next.ok && next.team.id).toBe(a.team.id);
   });
 
+  it('ゲーム開始前は、元の端末が切断していれば別の端末で入り直せる', () => {
+    const { m, a } = setup();
+    const next = m.joinTeam('Alpha', undefined, () => false);
+    expect(next.ok && next.team.id).toBe(a.team.id);
+    expect(m.resolveToken(a.token)).toBeNull();
+  });
+
+  it('ゲーム開始後は、元の端末が切断していても別の端末では入れない', () => {
+    const { m } = setup();
+    m.startQuiz(0);
+    expect(m.joinTeam('Alpha', undefined, () => false)).toEqual({ ok: false, reason: 'taken' });
+  });
+
   it('ゲーム開始後は新しいチームを作れない', () => {
     const { m } = setup();
     m.startQuiz(0);

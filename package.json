@@ -13,5 +13,8 @@
     "build:frontend": "cd frontend && npx vite build",
     "build:backend": "cd backend && npx tsc",
     "start": "cd backend && node dist/index.js"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.68.0"
   }
 }

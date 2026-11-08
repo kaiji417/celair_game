@@ -33,7 +33,7 @@ export class GameManager {
    * - 別の端末が使っているチームには入れない
    * - 新規チーム作成はロビー中のみ
    */
-  joinTeam(rawName: string, token?: string): JoinTeamResult {
+  joinTeam(rawName: string, token?: string, isOnline: (teamId: string) => boolean = () => true): JoinTeamResult {
     const name = (rawName ?? '').trim();
     if (!name || name.length > MAX_TEAM_NAME_LENGTH) return { ok: false, reason: 'invalid' };
 
@@ -46,7 +46,9 @@ export class GameManager {
       if (bound && token && this.tokenEquals(bound, token)) {
         return { ok: true, team: this.withDevice(existing), token: bound };
       }
-      if (bound) return { ok: false, reason: 'taken' };
+      // ゲーム開始前は、元の端末が接続していなければ別の端末で入り直せる
+      // （ブラウザバック後にQRから別のブラウザで開き直すと、保存したトークンが残っていないため）
+      if (bound && !(this.phase === 'lobby' && !isOnline(existing.id))) return { ok: false, reason: 'taken' };
       const newToken = this.issueToken();
       this.teamTokens.set(existing.id, newToken);
       this.save();

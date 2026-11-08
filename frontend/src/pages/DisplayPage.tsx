@@ -37,6 +37,12 @@ function calcRankedTeams(teams: Team[]): (Team & { rank: number })[] {
   return result;
 }
 
+/** 問題文の長さに応じて文字サイズを落とす（長文で画面が問題文だけになるのを防ぐ） */
+function questionLengthClass(text: string): string {
+  const len = [...text].length;
+  return len > 70 ? 'q-xlong' : len > 36 ? 'q-long' : '';
+}
+
 type OptionColumn = {
   id: string;
   text: string;
@@ -97,7 +103,7 @@ function DisclosureBoard({
     <div className={`disclosure ${dense}`}>
       {/* 状態を説明するラベルは置かない。金枠と印判が付くので見れば分かる */}
       <div className="disclosure-head">
-        <p className="disclosure-question">{quiz.question}</p>
+        <p className={`disclosure-question ${questionLengthClass(quiz.question)}`}>{quiz.question}</p>
         <p className="disclosure-prize">配分総額 {quiz.prizePool.toLocaleString()} pt</p>
       </div>
 
@@ -640,7 +646,7 @@ function DisplayPage() {
               </div>
             </div>
 
-            <p className="quiz-question-display">{currentQuiz.question}</p>
+            <p className={`quiz-question-display ${questionLengthClass(currentQuiz.question)}`}>{currentQuiz.question}</p>
 
             {(() => {
               // 選択肢の幅を揃えるため、数と最長文字数から列数を決める（3+1 のような段違いを防ぐ）
@@ -649,7 +655,7 @@ function DisplayPage() {
               const cols = n <= 3 ? n : n === 4 ? (maxLen <= 8 ? 4 : 2) : 3;
               return (
                 <div
-                  className={`options-display options-grid ${n >= 5 ? 'options-many' : ''} ${maxLen > 14 ? 'options-long' : ''}`}
+                  className={`options-display options-grid ${n >= 5 ? 'options-many' : ''} ${maxLen > 14 ? 'options-long' : ''} ${maxLen > 26 ? 'options-xlong' : ''}`}
                   style={{ '--opt-cols': cols } as CSSProperties}
                 >
                   {currentQuiz.options.map((opt, i) => {
